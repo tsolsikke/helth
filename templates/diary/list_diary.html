@@ -1,0 +1,89 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<canvas id="lineChart"></canvas>
+<script>
+    let lineCtx = document.getElementById("lineChart");
+    // 線グラフの設定
+    let lineConfig = {
+      type: 'line',
+      data: {
+        // ※labelとデータの関係は得にありません
+        labels: [
+        {% for date in dates %}'{{ date.date|date:"m/d" }}', {% endfor %}
+        ],
+        datasets: [{
+          label: '体力',
+          data: [
+            {% for date in dates %}{{ date.minimum.min_physical }}, {% endfor %}
+          ],
+          borderColor: '#f88',
+        }, {
+          label: 'ﾒﾝﾀﾙ',
+          data: [
+            {% for date in dates %}{{ date.minimum.min_mental }}, {% endfor %}
+          ],
+          borderColor: '#48f',
+        }],
+      },
+      options: {
+        scales: {
+          // Y軸の最大値・最小値、目盛りの範囲などを設定する
+          y: {
+            suggestedMin: 0,
+            suggestedMax: 10,
+            ticks: {
+              stepSize: 2,
+            }
+          }
+        },
+      },
+    };
+    let lineChart = new Chart(lineCtx, lineConfig);
+</script>
+
+<table>
+  <thead>
+    <tr>
+      <th>日付</th>
+      <th>曜日</th>
+      <th>帰宅時間</th>
+      <th>仮眠時間</th>
+      <th>起床体力</th>
+      <th>起床ﾒﾝﾀﾙ</th>
+      <th>帰宅体力</th>
+      <th>帰宅ﾒﾝﾀﾙ</th>
+      <th>就寝体力</th>
+      <th>就寝ﾒﾝﾀﾙ</th>
+      <th>最小体力</th>
+      <th>最小ﾒﾝﾀﾙ</th>
+      <th>備考1</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if dates %}
+      {% for date in dates %}
+        <tr>
+          <td><a href="/diary/{{ date.date|date:"Y-m-d" }}">{{ date.date }}</a></td>
+          <td>{{ date.get_day_of_week_display }}</td>
+          <td>{{ date.return_time }}</td>
+          <td>{{ date.nap_time }}</td>
+          {% for status in date.statusentry.all %}
+            <td>{% if status.physical %}{{ status.physical}}{% else %}{% endif %}</td>
+            <td>{% if status.mental %}{{ status.mental}}{% else %}{% endif %}</td>
+          {% endfor %}
+          <td>{{ date.minimum.min_physical }}</td>
+          <td>{{ date.minimum.min_mental }}</td>
+          <td>{{ date.note1 }}</td>
+          <td><a href="/diary/{{ date.date|date:"Y-m-d" }}/edit">[Edit]</a></td>
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan=5>No diary.</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+{% endblock %}

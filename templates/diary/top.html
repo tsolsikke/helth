@@ -1,0 +1,175 @@
+{% extends 'layout.html' %}
+{% block content %}
+<canvas id="lineChart"></canvas>
+<script>
+    let lineCtx = document.getElementById("lineChart");
+    // 線グラフの設定
+    let lineConfig = {
+      type: 'line',
+      data: {
+        // ※labelとデータの関係は得にありません
+        labels: [
+        {% for date in dates %}'{{ date.date|date:"m/d" }}', {% endfor %}
+        ],
+        datasets: [{
+          label: '体力',
+          data: [
+            {% for date in dates %}{{ date.minimum.min_physical }}, {% endfor %}
+          ],
+          borderColor: '#f88',
+        }, {
+          label: 'ﾒﾝﾀﾙ',
+          data: [
+            {% for date in dates %}{{ date.minimum.min_mental }}, {% endfor %}
+          ],
+          borderColor: '#48f',
+        }],
+      },
+      options: {
+        scales: {
+          // Y軸の最大値・最小値、目盛りの範囲などを設定する
+          y: {
+            suggestedMin: 0,
+            suggestedMax: 10,
+            ticks: {
+              stepSize: 2,
+            }
+          }
+        },
+      },
+    };
+    let lineChart = new Chart(lineCtx, lineConfig);
+</script>
+
+
+<form action="?" method="post">
+{% csrf_token %}
+<div style="margin-left:40px;margin-top:3em;margin-right:8em;" >
+<div class="input-group mb-3">
+  <span class="input-group-text">日付　　</span>
+  <input id="today" type="date" class="form-control" name="date">
+</div>
+<div class="input-group mb-3">
+  <span class="input-group-text">起床時刻</span>
+  <input type="time" class="form-control" name="up" value={% if today.up %}"{{ today.up|time:'H:i' }}"{% endif %}>
+</div>
+<div class="input-group mb-3">
+  <span class="input-group-text">帰宅時刻</span>
+  <input type="time" class="form-control" name="return_time" value={% if today.return_time %}"{{ today.return_time|time:'H:i' }}"{% endif %}>
+</div>
+<div class="input-group mb-3">
+  <span class="input-group-text">就寝時刻</span>
+  <input type="time" class="form-control" name="down" value={% if today.down %}"{{ today.down|time:'H:i' }}"{% endif %}>
+</div>
+<div class="input-group mb-3">
+  <span class="input-group-text" >仮眠時間</span>
+    <select class="form-select form-select-sm m-1 form-control" name="nap_time">
+		<option selected=""></option>
+        <option value="0"{% if today.nap_time == 0 %}selected{% endif %}>0</option>
+        <option value="0.5"{% if today.nap_time == 0.5 %}selected{% endif %}>0.5</option>
+        <option value="1"  {% if today.nap_time == 1 %}selected{% endif %}>1</option>
+        <option value="1.5"{% if today.nap_time == 1.5 %}selected{% endif %}>1.5</option>
+        <option value="2"  {% if today.nap_time == 2 %}selected{% endif %}>2</option>
+        <option value="2.5"{% if today.nap_time == 2.5 %}selected{% endif %}>2.5</option>
+        <option value="3"  {% if today.nap_time == 3 %}selected{% endif %}>3</option>
+        <option value="4"  {% if today.nap_time == 4 %}selected{% endif %}>4</option>
+        <option value="5"  {% if today.nap_time == 5 %}selected{% endif %}>5</option>
+        <option value="6"  {% if today.nap_time == 6 %}selected{% endif %}>6</option>
+    </select>
+</div>
+
+
+{% for entry in status_entry %}
+<div class="input-group mb-3">
+  <span class="input-group-text" {% if entry.time_of_day == '1' %}style="background-color:#f82;color:#fff" >起床{%elif entry.time_of_day == '2' %}style="background-color:#4bd;color:#fff" >帰宅{% else %}style="background-color:#38d;color:#fff" >就寝{% endif %}体力</span>
+  <select class="form-select form-select-sm m-1 form-control" name="{% if entry.time_of_day == '1' %}up{% elif entry.time_of_day == '2' %}return_time{%else%}down{%endif%}_physical" value="{{ entry.physical }}">
+    <option selected=""></option>
+    <option value="1"{% if entry.physical == 1 %} selected{% endif %}>1</option>
+    <option value="2"{% if entry.physical == 2 %} selected{% endif %}>2</option>
+    <option value="3"{% if entry.physical == 3 %} selected{% endif %}>3</option>
+    <option value="4"{% if entry.physical == 4 %} selected{% endif %}>4</option>
+    <option value="5"{% if entry.physical == 5 %} selected{% endif %}>5</option>
+    <option value="6"{% if entry.physical == 6 %} selected{% endif %}>6</option>
+    <option value="7"{% if entry.physical == 7 %} selected{% endif %}>7</option>
+    <option value="8"{% if entry.physical == 8 %} selected{% endif %}>8</option>
+    <option value="9"{% if entry.physical == 9 %} selected{% endif %}>9</option>
+    <option value="10"{% if entry.physical == 10 %} selected{% endif %}>10</option>
+  </select>
+</div>
+<div class="input-group mb-3">
+  <span class="input-group-text"{% if entry.time_of_day == '1' %}style="background-color:#f82;color:#fff" >起床{%elif entry.time_of_day == '2' %}style="background-color:#4bd;color:#fff" >帰宅{% else %}style="background-color:#38d;color:#fff" >就寝{% endif %}ﾒﾝﾀﾙ</span>
+  <select class="form-select form-select-sm m-1 form-control" name="{% if entry.time_of_day == '1' %}up{% elif entry.time_of_day == '2' %}return_time{%else%}down{%endif%}_mental" value="{{ entry.mental }}">
+    <option selected=""></option>
+    <option value="1"{% if entry.mental == 1 %} selected{% endif %}>1</option>
+    <option value="2"{% if entry.mental == 2 %} selected{% endif %}>2</option>
+    <option value="3"{% if entry.mental == 3 %} selected{% endif %}>3</option>
+    <option value="4"{% if entry.mental == 4 %} selected{% endif %}>4</option>
+    <option value="5"{% if entry.mental == 5 %} selected{% endif %}>5</option>
+    <option value="6"{% if entry.mental == 6 %} selected{% endif %}>6</option>
+    <option value="7"{% if entry.mental == 7 %} selected{% endif %}>7</option>
+    <option value="8"{% if entry.mental == 8 %} selected{% endif %}>8</option>
+    <option value="9"{% if entry.mental == 9 %} selected{% endif %}>9</option>
+    <option value="10"{% if entry.mental == 10 %} selected{% endif %}>10</option>
+  </select>
+</div>
+{% endfor %}
+<div class="input-group mb-3">
+    <span class="input-group-text">備考１　</span>
+    <input type="text" class="form-control" name="note1" value="{% if today.note1 %}{{ today.note1 }}{% endif %}">
+</div>
+<input style="margin-bottom:40px;" class="btn btn-primary w-100"  type="submit" name="edit" value="編　集">
+
+</div>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>日付</th>
+      <th>曜日</th>
+      <th>帰宅時間</th>
+      <th>仮眠時間</th>
+      <th>起床体力</th>
+      <th>起床ﾒﾝﾀﾙ</th>
+      <th>帰宅体力</th>
+      <th>帰宅ﾒﾝﾀﾙ</th>
+      <th>就寝体力</th>
+      <th>就寝ﾒﾝﾀﾙ</th>
+      <th>最小体力</th>
+      <th>最小ﾒﾝﾀﾙ</th>
+      <th>備考1</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if dates %}
+      {% for date in dates %}
+        <tr>
+          <td><a href="/diary/{{ date.date|date:"Y-m-d" }}">{{ date.date }}</a></td>
+          <td>{{ date.get_day_of_week_display }}</td>
+          <td>{{ date.return_time }}</td>
+          <td>{{ date.nap_time }}</td>
+          {% for status in date.statusentry.all %}
+            <td>{% if status.physical %}{{ status.physical}}{% else %}{% endif %}</td>
+            <td>{% if status.mental %}{{ status.mental}}{% else %}{% endif %}</td>
+          {% endfor %}
+          <td>{{ date.minimum.min_physical }}</td>
+          <td>{{ date.minimum.min_mental }}</td>
+          <td>{{ date.note1 }}</td>
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan=5>No diary.</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+<script>
+var today = new Date();
+today.setDate(today.getDate());
+var yyyy = today.getFullYear();
+var mm = ("0"+(today.getMonth()+1)).slice(-2);
+var dd = ("0"+today.getDate()).slice(-2);
+document.getElementById("today").value=yyyy+'-'+mm+'-'+dd;
+</script>
+{% endblock %}
