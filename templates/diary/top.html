@@ -47,7 +47,7 @@
 <div style="margin-left:40px;margin-top:3em;margin-right:8em;" >
 <div class="input-group mb-3">
   <span class="input-group-text">日付　　</span>
-  <input id="today" type="date" class="form-control" name="date">
+  <input type="date" class="form-control" name="date" {% if today.date %}value="{{ today.date|date:'Y-m-d' }}"{% else %}value="{% now 'Y-m-d' %}"{% endif %}>
 </div>
 <div class="input-group mb-3">
   <span class="input-group-text">起床時刻</span>
