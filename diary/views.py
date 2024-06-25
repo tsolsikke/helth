@@ -65,7 +65,11 @@ def top(request, year=None, month=None, day=None):
         status_entry = StatusEntry.objects.filter(date=day).order_by('time_of_day')
     else:
         status_entry = []
-    dates = Date.objects.filter(date__lte=f'{datetime.date.today().year}-{datetime.date.today().month}-{int(datetime.date.today().day)+7}').prefetch_related('statusentry', 'minimum').all().order_by('date')
+    jst = datetime.timezone(datetime.timedelta(hours=9), 'JST')
+    now = datetime.datetime.now(jst)
+    after7days = now + datetime.timedelta(days=7)
+    aft7d_str = after7days.strftime('%Y-%m-%d')
+    dates = Date.objects.filter(date__lte=aft7d_str).prefetch_related('statusentry', 'minimum').all().order_by('date')
     context = {'title': '週間データ', 'dates': dates, 'today': day, 'status_entry': status_entry, 'success_message': success_message, 'error_message': error_message}
     template = loader.get_template('diary/top.html')
     return HttpResponse(template.render(context, request))
